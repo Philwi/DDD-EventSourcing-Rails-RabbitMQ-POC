@@ -1,0 +1,45 @@
+version: "3.4"
+services:
+  redis:
+    image: "redis:alpine"
+    volumes:
+      - ./volumes/.redis:/data
+    ports:
+      - "6379:6379"
+  order:
+    ports:
+      - "8000:3000"
+    depends_on:
+      - redis
+      - db
+    image: order_image
+    build:
+      dockerfile: order/Dockerfile
+    volumes:
+      - ./order:/usr/src/order
+    environment:
+      RAILS_ENV: development
+  admin:
+    ports:
+      - "8001:3000"
+    depends_on:
+      - redis
+      - db
+    image: admin_image
+    build:
+      dockerfile: admin/Dockerfile
+    volumes:
+      - ./admin:/usr/src/admin
+    environment:
+      RAILS_ENV: development
+  db:
+    image: postgres:14.0
+    ports:
+      - "5433:5432"
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - ./volumes/.dbdata:/var/lib/postgresql/data/pgdata
