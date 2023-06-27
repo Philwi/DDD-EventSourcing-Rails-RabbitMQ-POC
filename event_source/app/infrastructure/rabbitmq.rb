@@ -1,0 +1,1 @@
+module Rabbitmq; end

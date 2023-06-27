@@ -19,6 +19,10 @@ services:
       - ./order:/usr/src/order
     environment:
       RAILS_ENV: development
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
   admin:
     ports:
       - "8001:3000"
@@ -32,6 +36,27 @@ services:
       - ./admin:/usr/src/admin
     environment:
       RAILS_ENV: development
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+  event_source:
+    ports:
+      - "8002:3000"
+    depends_on:
+      - redis
+      - db
+    image: event_source_image
+    build:
+      dockerfile: event_source/Dockerfile
+    volumes:
+      - ./event_source:/usr/src/event_source
+    environment:
+      RAILS_ENV: development
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
   db:
     image: postgres:14.0
     ports:
@@ -52,9 +77,3 @@ services:
     volumes:
         - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
         - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-    networks:
-        - rabbitmq_go_net
-
-networks:
-  rabbitmq_go_net:
-    driver: bridge
